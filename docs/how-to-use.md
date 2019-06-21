@@ -4,14 +4,27 @@
 
 * [Getting Started guide for RTCMultiConnection](https://github.com/muaz-khan/RTCMultiConnection/tree/master/docs/getting-started.md)
 
-All files from `/dist` directory are available on CDN: `https://cdn.webrtc-experiment.com:443/`
-
 ```html
 <!-- or -->
 <script src="/dist/RTCMultiConnection.min.js"></script>
 
 <!-- Heroku Link -->
 <script src="https://rtcmulticonnection.herokuapp.com/dist/RTCMultiConnection.min.js"></script>
+
+<!-- or specific version -->
+<script src="https://github.com/muaz-khan/RTCMultiConnection/releases/download/3.4.7/RTCMultiConnection.js"></script>
+
+<!-- or CDN -->
+<script src="https://rawgit.com/muaz-khan/RTCMultiConnection/master/dist/RTCMultiConnection.min.js"></script>
+
+<!-- another CDN -->
+<script src="https://cdn.jsdelivr.net/npm/rtcmulticonnection@latest/dist/RTCMultiConnection.min.js"></script>
+
+<!-- another CDN -->
+<script src="https://unpkg.com/rtcmulticonnection@latest/dist/RTCMultiConnection.min.js"></script>
+
+<!-- bundle CDN -->
+<script src="https://bundle.run/rtcmulticonnection@latest"></script>
 ```
 
 If you're sharing files, you also need to link:
@@ -36,7 +49,7 @@ You can use custom ports either via `config.json` file:
 
 ```json
 {
-  "socketURL": "http:s//yourdomain.com:9001/",
+  "socketURL": "https://yourdomain.com:9001/",
   "socketMessageEvent": "RTCMultiConnection-Message"
 }
 ```
@@ -44,7 +57,7 @@ You can use custom ports either via `config.json` file:
 Or simply override in your HTML code:
 
 ```javascript
-connection.socketURL = 'http:s//yourdomain.com:9001/';
+connection.socketURL = 'https://yourdomain.com:9001/';
 
 // if your server is already having "message" event
 // then you can use something else, unique.
@@ -72,30 +85,7 @@ Here is a demo explaining how to use above `socketURL`:
 
 ## Integrate in your own applications?
 
-```javascript
-// node.js code
-require('./Signaling-Server.js')(httpServerHandlerOrPort);
-```
-
-If you're using [express.js](http://stackoverflow.com/a/35985109/552182):
-
-```javascript
-var fs = require('fs');
-
-var options = {
-    key: fs.readFileSync('fake-keys/privatekey.pem'),
-    cert: fs.readFileSync('fake-keys/certificate.pem')
-};
-
-var express = require("express"),
-    http = require("https"), // Use HTTPs here -------------
-    app = express(),
-    server = http.createServer(options, app);
-
-server.listen(3000);
-
-require('./Signaling-Server.js')(server);
-```
+* https://github.com/muaz-khan/RTCMultiConnection-Server/wiki/Integrate-inside-nodejs-applications
 
 # Other Documents
 
@@ -105,10 +95,6 @@ require('./Signaling-Server.js')(server);
 4. [Upgrade from v2 to v3](https://github.com/muaz-khan/RTCMultiConnection/tree/master/docs/upgrade.md)
 5. [How to write iOS/Android applications?](https://github.com/muaz-khan/RTCMultiConnection/tree/master/docs/ios-android.md)
 6. [Tips & Tricks](https://github.com/muaz-khan/RTCMultiConnection/blob/master/docs/tips-tricks.md)
-
-## Twitter
-
-* https://twitter.com/WebRTCWeb i.e. @WebRTCWeb
 
 ## License
 

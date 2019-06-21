@@ -17,8 +17,6 @@
     <meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-    <link rel="author" type="text/html" href="https://plus.google.com/+MuazKhan">
-
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,600' rel='stylesheet' type='text/css'>
 
     <style>
@@ -84,7 +82,7 @@
           border: 1px solid #1B1B1B;
           background-color: #D5D8D8;
           cursor: pointer;
-          background-image: url(https://cdn.webrtc-experiment.com/images/btn-select-file.png);
+          background-image: url(https://www.webrtc-experiment.com/images/btn-select-file.png);
           outline: none;
         }
 
@@ -185,7 +183,7 @@
            background-repeat: no-repeat;
            background-position: center center;
            background-size: 64px 64px;
-           background-image: url(https://cdn.webrtc-experiment.com/images/android-app-icon.png);
+           background-image: url(https://www.webrtc-experiment.com/images/android-app-icon.png);
            width: 64px;
            height: 64px;
            position: absolute;
@@ -198,7 +196,7 @@
           background-repeat: no-repeat;
            background-position: center center;
            background-size: 64px 64px;
-           background-image: url(https://cdn.webrtc-experiment.com/images/chrome-web-store-icon.png);
+           background-image: url(https://www.webrtc-experiment.com/images/chrome-web-store-icon.png);
            width: 64px;
            height: 64px;
            position: absolute;
@@ -288,9 +286,10 @@
     </script>
 
     <script src="/dist/RTCMultiConnection.min.js"></script>
+    <script src="/node_modules/webrtc-adapter/out/adapter.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 
-    <script src="https://cdn.webrtc-experiment.com:443/FileBufferReader.js"></script>
+    <script src="/node_modules/fbr/FileBufferReader.js"></script>
 
     <script>
         window.onerror = console.error = function() {
@@ -399,6 +398,17 @@
                     // oneway: true --- to make it one-to-many
                 };
 
+                // https://www.rtcmulticonnection.org/docs/iceServers/
+                // use your own TURN-server here!
+                connection.iceServers = [{
+                    'urls': [
+                        'stun:stun.l.google.com:19302',
+                        'stun:stun1.l.google.com:19302',
+                        'stun:stun2.l.google.com:19302',
+                        'stun:stun.l.google.com:19302?transport=udp',
+                    ]
+                }];
+
                 connection.filesContainer = logsDiv;
 
                 connection.connectedWith = {};
@@ -475,7 +485,7 @@
                 var message = 'Connecting room:<br><b>' + connection.channel + '</b>';
                 appendLog(message);
 
-                connection.openOrJoin(connection.channel, function(isRoomExists, roomid) {
+                connection.openOrJoin(connection.channel, function(isRoomExist, roomid) {
                     var message = 'Successfully connected to room: <b>' + roomid + '</b><hr>Other users can join you on iPhone/Android using "' + roomid + '" or desktop (Windows/MacOSX/Ubuntu) users can join using this (secure/private) URL: <a href="./file-sharing.html#' + roomid + '" target="_blank">file-sharing.html#' + roomid + '</a>';
 
                     // if (isRoomEists) { }
@@ -490,15 +500,16 @@
                         }
                     }
 
-                    var socket = connection.getSocket();
-                    socket.on('disconnect', function() {
-                       appendLog('Seems disconnected.', 'red');
-                    });
-                    socket.on('connect', function() {
-                       location.reload();
-                    });
-                    socket.on('error', function() {
-                       location.reload();
+                    connection.getSocket(function(socket) {
+                      socket.on('disconnect', function() {
+                         appendLog('Seems disconnected.', 'red');
+                      });
+                      socket.on('connect', function() {
+                         location.reload();
+                      });
+                      socket.on('error', function() {
+                         location.reload();
+                      });
                     });
 
                     window.addEventListener('offline', function() {
@@ -719,7 +730,7 @@
                 if (fileNameMatches) {
                     iframe.src = URL.createObjectURL(file);
                 } else {
-                    iframe.src = 'https://rtcxp.com/fs/unknown-file.png';
+                    iframe.src = 'https://www.webrtc-experiment.com/images/unknown-file.png';
                 }
             }
 

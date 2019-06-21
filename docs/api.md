@@ -1,24 +1,30 @@
 # API Reference
 
-> RTCMultiConnection v3 API References
+> RTCMultiConnection API References
 
 You can search docs/APIs here:
 
+* http://www.rtcmulticonnection.org/
 * http://www.rtcmulticonnection.org/docs/
 
 ### `socketURL`
 
 1. You can run nodejs on a separate domain or separate port or on a separate server
 2. You can set `socketURL="ip-address"` to link nodejs server
-3. Now you can run RTCMultiConnection-v3 demos on any webpage; whether it is PHP page, ASP.net page, python or ruby page or whatever framework running top over HTML.
+3. Now you can run RTCMultiConnection demos on any webpage; whether it is PHP page, ASP.net page, python or ruby page or whatever framework running top over HTML.
 
 ```javascript
 connection.socketURL = 'https://onlyChangingPort.com:8888/';
 connection.socketURL = 'https://separateDomain.com:443/';
 connection.socketURL = '/'; // same domain
 
-// or a free signaling server
+// or a free signaling server:
+
+// v3.4.7 or newer
 connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
+
+// v3.4.6 or older
+connection.socketURL = 'https://webrtcweb.com:9001/';
 ```
 
 ### `socketCustomParameters`
@@ -280,52 +286,6 @@ Its defined here:
 
 * [getUserMedia.js#L20](https://github.com/muaz-khan/RTCMultiConnection/tree/master/dev/getUserMedia.js#L20)
 
-## `becomePublicModerator`
-
-By default: all moderators are private.
-
-This method returns list of all moderators (room owners) who declared themselves as `public` via `becomePublicModerator` method:
-
-```javascript
-# to become a public moderator
-connection.open('roomid', true); // 2nd argument is "TRUE"
-
-# or call this method later (any time)
-connection.becomePublicModerator();
-```
-
-### `getPublicModerators`
-
-You can access list of all the public rooms using this method. This works similar to old RTCMultiConnection method `onNewSession`.
-
-Here is how to get public moderators:
-
-```javascript
-connection.getPublicModerators(function(array) {
-	array.forEach(function(moderator) {
-		// moderator.extra
-		connection.join(moderator.userid);
-	});
-});
-```
-
-You can even search for specific moderators. Moderators whose userid starts with specific string:
-
-```javascript
-var moderatorIdStartsWith = 'public-moderator-';
-connection.getPublicModerators(moderatorIdStartsWith, function(array) {
-	// only those moderators are returned here
-	// that are having userid similar to this:
-	// public-moderator-xyz
-	// public-moderator-abc
-	// public-moderator-muaz
-	// public-moderator-conference
-	array.forEach(function(moderator) {
-		// moderator.extra
-		connection.join(moderator.userid);
-	});
-});
-```
 
 ## `setUserPreferences`
 
@@ -714,28 +674,6 @@ connection.processSdp = function(sdp) {
 
 * http://www.rtcmulticonnection.org/docs/processSdp/
 
-## `shiftModerationControl`
-
-Moderator can shift moderation control to any other user:
-
-```javascript
-connection.shiftModerationControl('remoteUserId', connection.broadcasters, false);
-```
-
-`connection.broadcasters` is the array of users that builds mesh-networking model i.e. multi-user conference.
-
-Moderator shares `connection.broadcasters` with each new participant; so that new participants can connect with other members of the room as well.
-
-## `onShiftedModerationControl`
-
-This event is fired, as soon as moderator of the room shifts moderation control toward you:
-
-```javascript
-connection.onShiftedModerationControl = function(sender, existingBroadcasters) {
-	connection.acceptModerationControl(sender, existingBroadcasters);
-};
-```
-
 ## `autoCloseEntireSession`
 
 * http://www.rtcmulticonnection.org/docs/autoCloseEntireSession/
@@ -756,26 +694,6 @@ A DOM-element to append videos or audios or screens:
 connection.videosContainer = document.getElementById('videos-container');
 ```
 
-## `addNewBroadcaster`
-
-In a one-way session, you can make multiple broadcasters using this method:
-
-```javascript
-if(connection.isInitiator) {
-	connection.addNewBroadcaster('remoteUserId');
-}
-```
-
-Now this user will also share videos/screens.
-
-## `removeFromBroadcastersList`
-
-Remove user from `connection.broadcasters` list.
-
-```javascript
-connection.removeFromBroadcastersList('remote-userid');
-```
-
 ## `onMediaError`
 
 If screen or video capturing fails:
@@ -787,6 +705,8 @@ connection.onMediaError = function(error) {
 ```
 
 ## `renegotiate`
+
+> Note on 10-02-2018: `replaceTrack` is preferred over `renegotiate`.
 
 Recreate peers. Capture new video using `connection.captureUserMedia` and call `connection.renegotiate()` and that new video will be shared with all connected users.
 
@@ -850,43 +770,11 @@ connection.renegotiate();
 
 * http://www.rtcmulticonnection.org/docs/userid/
 
-`conection.open` method sets this:
+You must set userid before opening or joining a room:
 
 ```javascript
-connection.open = function(roomid) {
-    connection.userid = roomid; // --------- please check this line
-
-    // rest of the codes
-};
-```
-
-It means that `roomid` is always organizer/moderator's `userid`.
-
-RTCMultiConnection requires unique `userid` for each peer.
-
-Following code is WRONG/INVALID:
-
-```javascript
-// both organizer and participants are using same 'userid'
-connection.userid = roomid;
-connection.open(roomid);
-connection.join(roomid);
-```
-
-Following code is VALID:
-
-```javascript
-connection.userid = connection.token(); // random userid
-connection.open(roomid);
-connection.join(roomid);
-```
-
-Following code is also VALID:
-
-```javascript
-var roomid = 'xyz';
-connection.open(roomid); // organizer will use "roomid" as his "userid" here
-connection.join(roomid); // participant will use random userid here
+connection.userid = 'abcdef';
+connection.openOrJoin('roomid');
 ```
 
 ## `session`
@@ -1012,12 +900,14 @@ connection.onEntireSessionClosed = function(event) {
 Open room:
 
 ```javascript
-var isPublicRoom = false;
-connection.open('roomid', isPublicRoom);
+connection.open('roomid', function(isRoomCreated, roomid, error) {
+	if(error) {
+        alert(error);
 
-// or
-connection.open('roomid', function() {
-	// on room created
+        // if error says that room is already created
+        connection.join('room-id');
+        return;
+    }
 });
 ```
 
@@ -1026,7 +916,15 @@ connection.open('roomid', function() {
 Join room:
 
 ```javascript
-connection.join('roomid');
+connection.join('roomid', function(isRoomJoined, roomid, error) {
+    if(error) {
+        // maybe room does not exist
+        // maybe room is full
+        // maybe password is invalid
+        alert(error);
+        return;
+    }
+});
 
 // or pass "options"
 connection.join('roomid', {
@@ -1049,9 +947,13 @@ connection.join('roomid', {
 connection.openOrJoin('roomid');
 
 // or
-connection.openOrJoin('roomid', function(isRoomExists, roomid) {
-	if(isRoomExists) alert('opened the room');
-	else alert('joined the room');
+connection.openOrJoin('roomid', function(isRoomOpened, roomid) {
+	if(isRoomOpened === true) {
+        alert('opened the room');
+    }
+	else {
+        alert('joined the room');
+    }
 });
 ```
 
@@ -1125,10 +1027,13 @@ You can skip any stream or allow RTCMultiConnection to share a stream with remot
 `nativePeer.addStream` method will be called only if below event permits the `MediaStream` object:
 
 ```javascript
-connection.beforeAddingStream = function(stream) {
+connection.beforeAddingStream = function(stream, peer) {
 	if(stream.id == 'any-streamid') return; // skip
 	if(stream.isScreen) return; // skip
 	if(stream.inactive) return; // skip
+	
+	// var remoteUserId = peer.userid;
+	// var remoteUserExtra = connection.peers[remoteUserId].extra;
 
 	return stream; // otherwise allow RTCMultiConnection to share this stream with remote users
 };
@@ -1197,7 +1102,7 @@ First step, install this chrome extension:
 
 * https://chrome.google.com/webstore/detail/screen-capturing/ajhifddimkapgcifgcodmmfdlknahffk
 
-Now use below code in any RTCMultiConnection-v3 (screen) demo:
+Now use below code in any RTCMultiConnection (screen) demo:
 
 ```html
 <script src="/dev/globals.js"></script>
@@ -1245,7 +1150,7 @@ connection.getScreenConstraints = function(callback) {
 
 ## Scalable Broadcasting
 
-v3 now supports WebRTC scalable broadcasting. Two new API are introduced: `enableScalableBroadcast` and `singleBroadcastAttendees`.
+RTCMultiConnection now supports WebRTC scalable broadcasting. Two new API are introduced: `enableScalableBroadcast` and `singleBroadcastAttendees`.
 
 ```javascript
 connection.enableScalableBroadcast = true; // by default, it is false.
@@ -1579,10 +1484,6 @@ You can either remove `enableLogs` from the `config.json` to **disable logs**; o
   "enableLogs": "false"
 }
 ```
-
-# Missing API?
-
-Search here: http://www.rtcmulticonnection.org/docs/
 
 # Tips & Tricks
 

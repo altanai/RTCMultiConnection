@@ -14,35 +14,56 @@
 
 # Rules to Contribute
 
-Download TAR which is having all the codes including `grunt` files. You don't need to install anything.
+Git clone:
 
+```sh
+mkdir RTCMultiConnection
+cd RTCMultiConnection
+git clone --depth=50 --branch=master git://github.com/muaz-khan/RTCMultiConnection.git ./
 ```
+
+or download ZIP:
+
+```sh
 # or MOST preferred one
-mkdir RTCMultiConnection-v3.0 && cd RTCMultiConnection-v3.0
-wget http://dl.webrtc-experiment.com/rtcmulticonnection-v3.tar.gz
-tar -zxvf rtcmulticonnection-v3.tar.gz
+wget https://github.com/muaz-khan/RTCMultiConnection/archive/master.zip
+unzip master.zip 
+cd RTCMultiConnection-master
 ls -a
 ```
 
-* [rtcmulticonnection-v3.tar.gz](http://dl.webrtc-experiment.com/rtcmulticonnection-v3.tar.gz)
+## Install Grunt
 
-Or manually install via git/NPM:
-
-```
-git clone --depth=50 --branch=master git://github.com/muaz-khan/RTCMultiConnection.git muaz-khan/RTCMultiConnection
-
-# install all dependencies
-npm install
+```sh
+mkdir node_modules
+npm install --save-dev
 
 # install grunt for code style verifications
-npm install grunt-cli
-npm install grunt
+npm install grunt-cli@0.1.13 -g
 
-# verify your changes
-npm test  # or "grunt"
+npm install grunt@0.4.5
+npm install grunt-bump@0.7.0
+npm install grunt-cli@0.1.13
+npm install grunt-contrib-clean@0.6.0
+npm install grunt-contrib-concat@0.5.1
+npm install grunt-contrib-copy@0.8.2
+npm install grunt-contrib-uglify@0.11.0
+npm install grunt-contrib-watch@1.1.0
+npm install grunt-jsbeautifier@0.2.10
+npm install grunt-replace@0.11.0
+npm install load-grunt-tasks@3.4.0
+```
+
+## Compile distribution
+
+```sh
+grunt
+
+# or auto compile
+grunt watch
+```
 
 # Success? Make a pull request!
-```
 
 ## License
 

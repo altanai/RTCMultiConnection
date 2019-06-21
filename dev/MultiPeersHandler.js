@@ -1,11 +1,8 @@
-// MultiPeersHandler.js
-
 function MultiPeers(connection) {
     var self = this;
 
-    var skipPeers = ['getAllParticipants', 'getLength', 'selectFirst', 'streams', 'send', 'forEach', 'backup'];
+    var skipPeers = ['getAllParticipants', 'getLength', 'selectFirst', 'streams', 'send', 'forEach'];
     connection.peers = {
-        backup: {},
         getLength: function() {
             var numberOfPeers = 0;
             for (var peer in this) {
@@ -42,8 +39,14 @@ function MultiPeers(connection) {
             var that = this;
 
             if (!isNull(data.size) && !isNull(data.type)) {
-                self.shareFile(data, remoteUserId);
-                return;
+                if (connection.enableFileSharing) {
+                    self.shareFile(data, remoteUserId);
+                    return;
+                }
+
+                if (typeof data !== 'string') {
+                    data = JSON.stringify(data);
+                }
             }
 
             if (data.type !== 'text' && !(data instanceof ArrayBuffer) && !(data instanceof DataView)) {
@@ -176,16 +179,6 @@ function MultiPeers(connection) {
                     connection.peers[remoteUserId].streams.push(stream);
                 }
 
-                if (isPluginRTC && window.PluginRTC) {
-                    var mediaElement = document.createElement('video');
-                    var body = connection.videosContainer;
-                    body.insertBefore(mediaElement, body.firstChild);
-                    setTimeout(function() {
-                        window.PluginRTC.attachMediaStream(mediaElement, stream);
-                    }, 3000);
-                    return;
-                }
-
                 self.onGettingRemoteMedia(stream, remoteUserId);
             },
             onRemoteStreamRemoved: function(stream) {
@@ -247,7 +240,7 @@ function MultiPeers(connection) {
     this.renegotiatePeer = function(remoteUserId, userPreferences, remoteSdp) {
         if (!connection.peers[remoteUserId]) {
             if (connection.enableLogs) {
-                console.error('This peer (' + remoteUserId + ') does not exists. Renegotiation skipped.');
+                console.error('Peer (' + remoteUserId + ') does not exist. Renegotiation skipped.');
             }
             return;
         }
@@ -267,19 +260,19 @@ function MultiPeers(connection) {
 
     this.replaceTrack = function(track, remoteUserId, isVideoTrack) {
         if (!connection.peers[remoteUserId]) {
-            throw 'This peer (' + remoteUserId + ') does not exists.';
+            throw 'This peer (' + remoteUserId + ') does not exist.';
         }
 
         var peer = connection.peers[remoteUserId].peer;
 
         if (!!peer.getSenders && typeof peer.getSenders === 'function' && peer.getSenders().length) {
             peer.getSenders().forEach(function(rtpSender) {
-                if (isVideoTrack && rtpSender.track instanceof VideoStreamTrack) {
+                if (isVideoTrack && rtpSender.track.kind === 'video') {
                     connection.peers[remoteUserId].peer.lastVideoTrack = rtpSender.track;
                     rtpSender.replaceTrack(track);
                 }
 
-                if (!isVideoTrack && rtpSender.track instanceof AudioStreamTrack) {
+                if (!isVideoTrack && rtpSender.track.kind === 'audio') {
                     connection.peers[remoteUserId].peer.lastAudioTrack = rtpSender.track;
                     rtpSender.replaceTrack(track);
                 }
@@ -378,49 +371,6 @@ function MultiPeers(connection) {
         }, remoteUserId);
     }
 
-    this.connectNewParticipantWithAllBroadcasters = function(newParticipantId, userPreferences, broadcastersList) {
-        if (connection.socket.isIO) {
-            return;
-        }
-
-        broadcastersList = (broadcastersList || '').split('|-,-|');
-
-        if (!broadcastersList.length) {
-            return;
-        }
-
-        var firstBroadcaster;
-
-        var remainingBroadcasters = [];
-        broadcastersList.forEach(function(list) {
-            list = (list || '').replace(/ /g, '');
-            if (list.length) {
-                if (!firstBroadcaster) {
-                    firstBroadcaster = list;
-                } else {
-                    remainingBroadcasters.push(list);
-                }
-            }
-        });
-
-        if (!firstBroadcaster) {
-            return;
-        }
-
-        self.onNegotiationNeeded({
-            newParticipant: newParticipantId,
-            userPreferences: userPreferences || false
-        }, firstBroadcaster);
-
-        if (!remainingBroadcasters.length) {
-            return;
-        }
-
-        setTimeout(function() {
-            self.connectNewParticipantWithAllBroadcasters(newParticipantId, userPreferences, remainingBroadcasters.join('|-,-|'));
-        }, 3 * 1000);
-    };
-
     this.onGettingRemoteMedia = function(stream, remoteUserId) {};
     this.onRemovingRemoteMedia = function(stream, remoteUserId) {};
     this.onGettingLocalMedia = function(localStream) {};
@@ -442,10 +392,6 @@ function MultiPeers(connection) {
     }
 
     this.shareFile = function(file, remoteUserId) {
-        if (!connection.enableFileSharing) {
-            throw '"connection.enableFileSharing" is false.';
-        }
-
         initFileBufferReader();
 
         connection.fbr.readAsArrayBuffer(file, function(uuid) {
@@ -465,7 +411,7 @@ function MultiPeers(connection) {
         }, {
             userid: connection.userid,
             // extra: connection.extra,
-            chunkSize: isFirefox ? 15 * 1000 : connection.chunkSize || 0
+            chunkSize: DetectRTC.browser.name === 'Firefox' ? 15 * 1000 : connection.chunkSize || 0
         });
     };
 
@@ -515,6 +461,4 @@ function MultiPeers(connection) {
         remoteUserId = remoteUserId || connection.peers.getAllParticipants()[0];
         return connection.peers[remoteUserId] ? connection.peers[remoteUserId].streams : [];
     };
-
-    this.isPluginRTC = connection.isPluginRTC = isPluginRTC;
 }

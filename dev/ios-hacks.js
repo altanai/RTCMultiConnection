@@ -1,7 +1,7 @@
 // ios-hacks.js
 
 function setCordovaAPIs() {
-    if (DetectRTC.osName !== 'iOS') return;
+    // if (DetectRTC.osName !== 'iOS') return;
     if (typeof cordova === 'undefined' || typeof cordova.plugins === 'undefined' || typeof cordova.plugins.iosrtc === 'undefined') return;
 
     var iosrtc = cordova.plugins.iosrtc;
@@ -13,6 +13,9 @@ function setCordovaAPIs() {
     navigator.getUserMedia = navigator.webkitGetUserMedia = iosrtc.getUserMedia;
 
     iosrtc.debug.enable('iosrtc*');
+    if (typeof iosrtc.selectAudioOutput == 'function') {
+        iosrtc.selectAudioOutput(window.iOSDefaultAudioOutputDevice || 'speaker'); // earpiece or speaker
+    }
     iosrtc.registerGlobals();
 }
 
