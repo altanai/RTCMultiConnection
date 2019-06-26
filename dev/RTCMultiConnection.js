@@ -7,6 +7,9 @@
     };
 
     connection.channel = connection.sessionid = (roomid || location.href.replace(/\/|:|#|\?|\$|\^|%|\.|`|~|!|\+|@|\[|\||]|\|*. /g, '').split('\n').join('').split('\r').join('')) + '';
+    connection.socketURL = connection.socketURL || "/";
+
+    console.log(" >>>> connection channel ", connection.channel);
 
     var mPeer = new MultiPeers(connection);
 
@@ -1553,7 +1556,7 @@
         }
     };
 
-    connection.socketURL = '@@socketURL'; // generated via config.json
+    //connection.socketURL = '@@socketURL'; // generated via config.json
     connection.socketMessageEvent = '@@socketMessageEvent'; // generated via config.json
     connection.socketCustomEvent = '@@socketCustomEvent'; // generated via config.json
     connection.DetectRTC = DetectRTC;

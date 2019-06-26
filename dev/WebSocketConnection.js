@@ -1,4 +1,7 @@
 function WebSocketConnection(connection, connectCallback) {
+
+    console.log(" >>>>s  WebSocketConnection ", connection);
+
     function isData(session) {
         return !session.audio && !session.video && !session.screen && session.data;
     }

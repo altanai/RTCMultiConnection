@@ -12,30 +12,38 @@ function setSdpConstraints(config) {
 }
 
 var RTCPeerConnection;
-if (typeof window.RTCPeerConnection !== 'undefined') {
-    RTCPeerConnection = window.RTCPeerConnection;
-} else if (typeof mozRTCPeerConnection !== 'undefined') {
+// if (typeof window.RTCPeerConnection !== 'undefined') {
+//     console.log(" >>> window RTCPeerConnection");
+//     RTCPeerConnection = window.RTCPeerConnection;
+// } else 
+
+if (typeof mozRTCPeerConnection !== 'undefined') {
+    console.log(" >>> moz RTCPeerConnection");
     RTCPeerConnection = mozRTCPeerConnection;
 } else if (typeof webkitRTCPeerConnection !== 'undefined') {
+    console.log(" >>> chrome RTCPeerConnection");
     RTCPeerConnection = webkitRTCPeerConnection;
+} else {
+    console.warn(" >>> RTCPeerConnection not found  ")
 }
-
 var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 var MediaStreamTrack = window.MediaStreamTrack;
 
-function PeerInitiator(config) {
-    if (typeof window.RTCPeerConnection !== 'undefined') {
-        RTCPeerConnection = window.RTCPeerConnection;
-    } else if (typeof mozRTCPeerConnection !== 'undefined') {
-        RTCPeerConnection = mozRTCPeerConnection;
-    } else if (typeof webkitRTCPeerConnection !== 'undefined') {
-        RTCPeerConnection = webkitRTCPeerConnection;
-    }
+console.log(" >>> RTC global varaibles ", RTCPeerConnection, RTCSessionDescription, RTCIceCandidate, MediaStreamTrack);
 
-    RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
-    RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
-    MediaStreamTrack = window.MediaStreamTrack;
+function PeerInitiator(config) {
+    // if (typeof window.RTCPeerConnection !== 'undefined') {
+    //     RTCPeerConnection = window.RTCPeerConnection;
+    // } else if (typeof mozRTCPeerConnection !== 'undefined') {
+    //     RTCPeerConnection = mozRTCPeerConnection;
+    // } else if (typeof webkitRTCPeerConnection !== 'undefined') {
+    //     RTCPeerConnection = webkitRTCPeerConnection;
+    // }
+
+    // RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
+    // RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+    // MediaStreamTrack = window.MediaStreamTrack;
 
     if (!RTCPeerConnection) {
         throw 'WebRTC 1.0 (RTCPeerConnection) API are NOT available in this browser.';

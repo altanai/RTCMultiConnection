@@ -1,4 +1,7 @@
 function SocketConnection(connection, connectCallback) {
+
+    console.log(" >>>>s  SocketConnection ", connection);
+
     function isData(session) {
         return !session.audio && !session.video && !session.screen && session.data;
     }
@@ -33,6 +36,7 @@ function SocketConnection(connection, connectCallback) {
     } catch (e) {};
 
     if (!connection.socketURL) {
+        console.log(" >>>>s  socket.io url is missing , using / ");
         connection.socketURL = '/';
     }
 

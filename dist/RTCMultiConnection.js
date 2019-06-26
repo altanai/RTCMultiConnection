@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-06-15 4:26:11 PM UTC
+// Last time updated: 2019-06-26 5:58:23 AM UTC
 
 // _________________________
 // RTCMultiConnection v3.6.9
@@ -123,6 +123,9 @@ var RTCMultiConnection = function(roomid, forceOptions) {
     })(typeof global !== 'undefined' ? global : null);
 
     function SocketConnection(connection, connectCallback) {
+
+        console.log(" >>>>s  SocketConnection ", connection);
+
         function isData(session) {
             return !session.audio && !session.video && !session.screen && session.data;
         }
@@ -157,6 +160,7 @@ var RTCMultiConnection = function(roomid, forceOptions) {
         } catch (e) {};
 
         if (!connection.socketURL) {
+            console.log(" >>>>s  socket.io url is missing , using / ");
             connection.socketURL = '/';
         }
 
@@ -2448,30 +2452,38 @@ var RTCMultiConnection = function(roomid, forceOptions) {
     }
 
     var RTCPeerConnection;
-    if (typeof window.RTCPeerConnection !== 'undefined') {
-        RTCPeerConnection = window.RTCPeerConnection;
-    } else if (typeof mozRTCPeerConnection !== 'undefined') {
+    // if (typeof window.RTCPeerConnection !== 'undefined') {
+    //     console.log(" >>> window RTCPeerConnection");
+    //     RTCPeerConnection = window.RTCPeerConnection;
+    // } else 
+
+    if (typeof mozRTCPeerConnection !== 'undefined') {
+        console.log(" >>> moz RTCPeerConnection");
         RTCPeerConnection = mozRTCPeerConnection;
     } else if (typeof webkitRTCPeerConnection !== 'undefined') {
+        console.log(" >>> chrome RTCPeerConnection");
         RTCPeerConnection = webkitRTCPeerConnection;
+    } else {
+        console.warn(" >>> RTCPeerConnection not found  ")
     }
-
     var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
     var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
     var MediaStreamTrack = window.MediaStreamTrack;
 
-    function PeerInitiator(config) {
-        if (typeof window.RTCPeerConnection !== 'undefined') {
-            RTCPeerConnection = window.RTCPeerConnection;
-        } else if (typeof mozRTCPeerConnection !== 'undefined') {
-            RTCPeerConnection = mozRTCPeerConnection;
-        } else if (typeof webkitRTCPeerConnection !== 'undefined') {
-            RTCPeerConnection = webkitRTCPeerConnection;
-        }
+    console.log(" >>> RTC global varaibles ", RTCPeerConnection, RTCSessionDescription, RTCIceCandidate, MediaStreamTrack);
 
-        RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
-        RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
-        MediaStreamTrack = window.MediaStreamTrack;
+    function PeerInitiator(config) {
+        // if (typeof window.RTCPeerConnection !== 'undefined') {
+        //     RTCPeerConnection = window.RTCPeerConnection;
+        // } else if (typeof mozRTCPeerConnection !== 'undefined') {
+        //     RTCPeerConnection = mozRTCPeerConnection;
+        // } else if (typeof webkitRTCPeerConnection !== 'undefined') {
+        //     RTCPeerConnection = webkitRTCPeerConnection;
+        // }
+
+        // RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
+        // RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+        // MediaStreamTrack = window.MediaStreamTrack;
 
         if (!RTCPeerConnection) {
             throw 'WebRTC 1.0 (RTCPeerConnection) API are NOT available in this browser.';
@@ -4051,6 +4063,9 @@ var RTCMultiConnection = function(roomid, forceOptions) {
         };
 
         connection.channel = connection.sessionid = (roomid || location.href.replace(/\/|:|#|\?|\$|\^|%|\.|`|~|!|\+|@|\[|\||]|\|*. /g, '').split('\n').join('').split('\r').join('')) + '';
+        connection.socketURL = connection.socketURL || "/";
+
+        console.log(" >>>> connection channel ", connection.channel);
 
         var mPeer = new MultiPeers(connection);
 
@@ -5597,7 +5612,7 @@ var RTCMultiConnection = function(roomid, forceOptions) {
             }
         };
 
-        connection.socketURL = '/'; // generated via config.json
+        //connection.socketURL = '/'; // generated via config.json
         connection.socketMessageEvent = 'RTCMultiConnection-Message'; // generated via config.json
         connection.socketCustomEvent = 'RTCMultiConnection-Custom-Message'; // generated via config.json
         connection.DetectRTC = DetectRTC;
